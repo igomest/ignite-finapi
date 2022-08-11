@@ -107,6 +107,7 @@ app.post("/withdraw", verifyExistsAccountCPF, (request, response) => {
   return response.status(201).send();
 });
 
+// Deve ser possível buscar o extrato bancário do cliente por data
 app.get("/statement/date", verifyExistsAccountCPF, (request, response) => {
   const { customer } = request;
   const { date } = request.query;
