@@ -60,9 +60,9 @@ app.post("/account", (request, response) => {
 
 // Deve ser possível buscar o extrato bancário do cliente
 app.get("/account", verifyExistsAccountCPF, (request, response) => {
-    const { customer } = request;
+  const { customer } = request;
 
-    return response.json(customer)
+  return response.json(customer);
 });
 
 app.get("/statement/", verifyExistsAccountCPF, (request, response) => {
@@ -135,6 +135,22 @@ app.put("/account", verifyExistsAccountCPF, (request, response) => {
   customer.name = name;
 
   return response.status(201).send();
+});
+
+app.delete("/account", (request, response) => {
+  const { customer } = request;
+
+  customers.splice(customer, 1);
+
+  return response.status(200).json(customers);
+});
+
+app.get("/balance", verifyExistsAccountCPF, (request, response) => {
+  const { customer } = request;
+
+  const balance = getBalance(customer.statement);
+
+  return response.json(balance);
 });
 
 app.listen(3333);
