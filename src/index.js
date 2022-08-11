@@ -59,7 +59,11 @@ app.post("/account", (request, response) => {
 });
 
 // Deve ser possível buscar o extrato bancário do cliente
-app.get("/account", (request, response) => {});
+app.get("/account", verifyExistsAccountCPF, (request, response) => {
+    const { customer } = request;
+
+    return response.json(customer)
+});
 
 app.get("/statement/", verifyExistsAccountCPF, (request, response) => {
   const { customer } = request;
@@ -113,7 +117,7 @@ app.get("/statement/date", verifyExistsAccountCPF, (request, response) => {
   const { date } = request.query;
 
   const dateFormat = new Date(date + " 00:00");
-  
+
   const statement = customer.statement.filter(
     (statement) =>
       statement.created_at.toDateString() ===
@@ -121,6 +125,16 @@ app.get("/statement/date", verifyExistsAccountCPF, (request, response) => {
   );
 
   return response.json(statement);
+});
+
+app.put("/account", verifyExistsAccountCPF, (request, response) => {
+  const { name } = request.body;
+
+  const { customer } = request;
+
+  customer.name = name;
+
+  return response.status(201).send();
 });
 
 app.listen(3333);
