@@ -8,6 +8,22 @@ app.use(express.json());
 
 const customers = [];
 
+// Middleware
+function verifyExistsAccountCPF(request, response, next) {
+  const { cpf } = request.headers;
+
+  const customer = customers.find((customer) => customer.cpf === cpf);
+
+  // Se não exister o customer, retorna o erro 400
+  if (!customer) {
+    return response.status(400).json({ error: "Customer not found" });
+  }
+
+  request.customer = customer;
+
+  return next();
+}
+
 // Criar conta
 app.post("/account", (request, response) => {
   const { cpf, name } = request.body;
@@ -33,16 +49,28 @@ app.post("/account", (request, response) => {
 // Deve ser possível buscar o extrato bancário do cliente
 app.get("/account", (request, response) => {});
 
-app.get("/statement/:cpf", (request, response) => {
-  const { cpf } = request.params;
-
-  const customer = customers.find((customer) => customer.cpf === cpf);
-
-  if (!customer) {
-    return response.status(400).json({ error: "Customer not found" });
-  }
+app.get("/statement/", verifyExistsAccountCPF, (request, response) => {
+  const { customer } = request;
 
   return response.json(customer.statement);
 });
 
-app.listen(3333);
+// Deve ser possível realizar um depósito
+app.post("/deposit", verifyExistsAccountCPF, (request, response) => {
+  const { description, amount } = request.body;
+
+  const { customer } = request;
+
+  const statementOperation = {
+    description,
+    amount,
+    created_at: new Date(),
+    type: "credit",
+  };
+
+  customer.statement.push(statementOperation);
+
+  return response.status(201).send()
+});
+
+app.listen(3333)
